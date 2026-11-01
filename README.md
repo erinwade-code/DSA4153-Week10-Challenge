@@ -13,7 +13,7 @@
 | 1 | Erin Wade Acuna | erinwade.acuna@ust.edu.ph | member1-readers | CSV and Excel readers, format configuration, reader checks |
 | 2 | | | member2-readers | Nested JSON and Parquet readers, column mapping, normalization checks |
 | 3 | | | member3-validation | Row validation, quarantine, duplicates/conflicts, rejection checks |
-| 4 | | | member4-analysis | pandas analysis, NumPy matrix, calculation checks |
+| 4 | John Oswald Amon | johnoswald.amon@ust.edu.ph | member4-analysis | pandas analysis, NumPy matrix, calculation checks |
 | 5 | | | member5-export | Export/reload comparison, staging, CLI/audit, failure checks |
 
 ## Reader output contract (all readers must follow this)
