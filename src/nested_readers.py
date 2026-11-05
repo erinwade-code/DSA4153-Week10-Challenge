@@ -62,3 +62,9 @@ def map_columns(df: pd.DataFrame, mapping: dict[str, str], source_file: str) -> 
     if missing:
         raise SchemaError(f"{source_file}: missing required columns {sorted(missing)}")
     return df[CANONICAL_COLUMNS].copy()
+
+def trim_text(df: pd.DataFrame) -> pd.DataFrame:
+    """Strip surrounding whitespace from text values only."""
+    return pd.DataFrame({c: pd.Series([v.strip() if isinstance(v, str) else v for v in df[c]],
+                                      index=df.index, dtype=object)
+                         for c in df.columns})
