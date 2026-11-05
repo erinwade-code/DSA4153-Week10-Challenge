@@ -54,3 +54,11 @@ def read_parquet_records(path: str, engine: str = "pyarrow") -> pd.DataFrame:
     """Read Parquet and keep every value as-is (strings); no casting yet."""
     p = _check_file(path, ".parquet")
     return _to_object_frame(pd.read_parquet(p, engine=engine))
+
+def map_columns(df: pd.DataFrame, mapping: dict[str, str], source_file: str) -> pd.DataFrame:
+    """Rename source columns to canonical names; fail if any required one is missing."""
+    df = df.rename(columns=mapping)
+    missing = set(CANONICAL_COLUMNS) - set(df.columns)
+    if missing:
+        raise SchemaError(f"{source_file}: missing required columns {sorted(missing)}")
+    return df[CANONICAL_COLUMNS].copy()
