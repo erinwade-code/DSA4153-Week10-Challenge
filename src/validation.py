@@ -1,6 +1,8 @@
 """Row validation for the canonical country records."""
 
 import math
+from pyexpat import errors
+from turtle import pd
 
 from src.common import CANONICAL_COLUMNS 
 
@@ -45,9 +47,9 @@ def validate_row(row):
     population = row.get("pop")
     gdp_per_capita = row.get("gdpPercap")
 
-    if country is None or not str(country).strip():
+    if pd.isna(country) or not str(country).strip():
         errors.append("Country must be nonempty")
-    if continent is None or not str(continent).strip():
+    if pd.isna(continent) or not str(continent).strip():
         errors.append("Continent must be nonempty")
     elif str(continent).strip() not in ALLOWED_CONTINENTS:
         errors.append("Invalid continent")
@@ -96,10 +98,20 @@ def validate_and_quarantine(records):
 class ConflictingKeyError(Exception):
     """Raised when a country-year key has different records."""
 
-
 def remove_exact_duplicates(records):
-    """Remove identical rows while preserving the first occurrence."""
-    return records.drop_duplicates(keep="first").reset_index(drop=True)
+    """Remove exact canonical duplicates and return removed copies."""
+    duplicate_mask = records.duplicated(
+        subset=CANONICAL_COLUMNS,
+        keep="first",
+    )
+
+    duplicate_log = records.loc[duplicate_mask].copy()
+    clean_records = records.loc[~duplicate_mask].copy()
+
+    return (
+        clean_records.reset_index(drop=True),
+        duplicate_log.reset_index(drop=True),
+    )
 
 
 def check_conflicting_keys(records):

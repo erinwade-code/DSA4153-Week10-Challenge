@@ -162,16 +162,30 @@ from src.validation import (
     ConflictingKeyError,
 )
 
-
 def test_remove_exact_duplicates():
     records = pd.DataFrame([
-        {"country": "Philippines", "year": "2007", "pop": "91077287"},
-        {"country": "Philippines", "year": "2007", "pop": "91077287"},
+        {
+            "country": "Philippines",
+            "continent": "Asia",
+            "year": "2007",
+            "lifeExp": "71.0",
+            "pop": "91077287",
+            "gdpPercap": "3190.0",
+        },
+        {
+            "country": "Philippines",
+            "continent": "Asia",
+            "year": "2007",
+            "lifeExp": "71.0",
+            "pop": "91077287",
+            "gdpPercap": "3190.0",
+        },
     ])
 
-    result = remove_exact_duplicates(records)
+    clean, duplicate_log = remove_exact_duplicates(records)
 
-    assert len(result) == 1
+    assert len(clean) == 1
+    assert len(duplicate_log) == 1
 
 
 def test_conflicting_key_raises_error():
