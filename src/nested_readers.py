@@ -37,3 +37,15 @@ def _to_object_frame(rows) -> pd.DataFrame:
     return pd.DataFrame({c: pd.Series([None if pd.isna(v) else v for v in df[c]],
                                       index=df.index, dtype=object)
                          for c in df.columns})
+
+def read_json_records(path: str, record_path: str, encoding: str = "utf-8") -> pd.DataFrame:
+    """Read nested JSON; record_path is the key holding the list of records."""
+    p = _check_file(path, ".json")
+    with open(p, encoding=encoding) as f:
+        doc = json.load(f)
+    if not isinstance(doc, dict) or record_path not in doc:
+        raise SchemaError(f"Missing JSON key {record_path!r} in {path}")
+    records = doc[record_path]               # everything else is metadata
+    if not isinstance(records, list):
+        raise SchemaError(f"{record_path!r} in {path} is not a list of records")
+    return _to_object_frame([flatten_record(r) for r in records])
