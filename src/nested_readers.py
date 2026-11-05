@@ -30,3 +30,10 @@ def _check_file(path: str, suffix: str) -> Path:
     if p.suffix.lower() != suffix:
         raise ValueError(f"Unsupported format {p.suffix!r}, expected {suffix!r}")
     return p
+
+def _to_object_frame(rows) -> pd.DataFrame:
+    """Build an object-dtype frame; missing cells become None, never NaN."""
+    df = pd.DataFrame(rows)
+    return pd.DataFrame({c: pd.Series([None if pd.isna(v) else v for v in df[c]],
+                                      index=df.index, dtype=object)
+                         for c in df.columns})
