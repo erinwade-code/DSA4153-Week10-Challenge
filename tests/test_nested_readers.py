@@ -47,3 +47,7 @@ class NestedReaderTests(unittest.TestCase):
         df = load_nested(self._settings(self._json({"records": [row]})), [])
         self.assertEqual(df["year"].iloc[0], 1952.5)
         self.assertEqual(df["pop"].iloc[0], "abc")
+
+    def test_json_missing_record_key(self):
+        with self.assertRaises(SchemaError):
+            read_json_records(self._json({"metadata": {}}), "records")
