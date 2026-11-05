@@ -74,3 +74,26 @@ def add_source_record(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     out.insert(0, "source_record", range(1, len(out) + 1))
     return out
+
+def load_nested(settings: dict, audit: list[dict]) -> pd.DataFrame:
+    """Read, map and normalize one JSON/Parquet input; append audit records.
+
+    settings is the manifest entry for the file plus a 'path' key.
+    """
+    fmt, path = settings["format"], settings["path"]
+    if fmt == "json":
+        raw = read_json_records(path, settings["record_path"], settings.get("encoding", "utf-8"))
+    elif fmt == "parquet":
+        raw = read_parquet_records(path, settings.get("engine", "pyarrow"))
+    else:
+        raise ValueError(f"Unsupported format: {fmt}")
+
+    audit.append({"step": "read", "source_file": path, "operation": f"read_{fmt}",
+                  "rule": "parse layout, keep original values",
+                  "rows_before": len(raw), "rows_after": len(raw)})
+
+    mapped = add_source_record(trim_text(map_columns(raw, settings["source_to_canonical"], path)))
+    audit.append({"step": "normalize", "source_file": path, "operation": "map_and_trim",
+                  "rule": "canonical names/order, trim whitespace",
+                  "rows_before": len(raw), "rows_after": len(mapped)})
+    return mapped
