@@ -117,3 +117,68 @@ def test_empty_country_is_rejected():
     errors = validate_row(row)
 
     assert "Country must be nonempty" in errors
+
+import pandas as pd
+from src.validation import validate_and_quarantine
+
+
+def test_validate_and_quarantine():
+    records = pd.DataFrame([
+        {
+            "source_file": "sample.csv",
+            "source_record": 1,
+            "country": "Philippines",
+            "continent": "Asia",
+            "year": "2007",
+            "lifeExp": "71.688",
+            "pop": "91077287",
+            "gdpPercap": "3190.481",
+        },
+        {
+            "source_file": "sample.csv",
+            "source_record": 2,
+            "country": "",
+            "continent": "Asia",
+            "year": "2007",
+            "lifeExp": "71.688",
+            "pop": "91077287",
+            "gdpPercap": "3190.481",
+        },
+    ])
+
+    valid, rejected = validate_and_quarantine(records)
+
+    assert len(valid) == 1
+    assert len(rejected) == 1
+    assert rejected.iloc[0]["source_record"] == 2
+    assert "Country must be nonempty" in rejected.iloc[0]["rejection_reason"]
+
+import pandas as pd
+import pytest
+
+from src.validation import (
+    remove_exact_duplicates,
+    check_conflicting_keys,
+    ConflictingKeyError,
+)
+
+
+def test_remove_exact_duplicates():
+    records = pd.DataFrame([
+        {"country": "Philippines", "year": "2007", "pop": "91077287"},
+        {"country": "Philippines", "year": "2007", "pop": "91077287"},
+    ])
+
+    result = remove_exact_duplicates(records)
+
+    assert len(result) == 1
+
+
+def test_conflicting_key_raises_error():
+    records = pd.DataFrame([
+        {"country": "Philippines", "year": "2007", "pop": "91077287"},
+        {"country": "Philippines", "year": "2007", "pop": "91077288"},
+    ])
+
+    with pytest.raises(ConflictingKeyError):
+        check_conflicting_keys(records)

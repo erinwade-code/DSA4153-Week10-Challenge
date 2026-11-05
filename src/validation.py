@@ -69,3 +69,53 @@ def validate_row(row):
         errors.append("GDP per capita must be greater than 0")
     return errors 
 
+import pandas as pd
+
+
+def validate_and_quarantine(records):
+    """Separate valid rows from rejected rows, preserving source details."""
+    valid_rows = []
+    rejected_rows = []
+
+    for _, row in records.iterrows():
+        errors = validate_row(row.to_dict())
+
+        if errors:
+            rejected = row.to_dict()
+            rejected["rejection_reason"] = "; ".join(errors)
+            rejected_rows.append(rejected)
+        else:
+            valid = row.to_dict()
+            valid_rows.append(valid)
+
+    valid_df = pd.DataFrame(valid_rows, columns=records.columns)
+    rejected_df = pd.DataFrame(rejected_rows)
+
+    return valid_df, rejected_df
+
+class ConflictingKeyError(Exception):
+    """Raised when a country-year key has different records."""
+
+
+def remove_exact_duplicates(records):
+    """Remove identical rows while preserving the first occurrence."""
+    return records.drop_duplicates(keep="first").reset_index(drop=True)
+
+
+def check_conflicting_keys(records):
+    """Raise an error if a country-year key has different records."""
+    key_columns = ["country", "year"]
+
+    duplicated_keys = records.duplicated(
+        subset=key_columns,
+        keep=False,
+    )
+
+    conflicts = records[duplicated_keys]
+
+    for _, group in conflicts.groupby(key_columns, dropna=False):
+        if len(group.drop_duplicates()) > 1:
+            key = tuple(group.iloc[0][column] for column in key_columns)
+            raise ConflictingKeyError(
+                f"Conflicting records found for country-year key: {key}"
+            )
