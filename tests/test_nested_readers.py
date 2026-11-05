@@ -67,3 +67,18 @@ class NestedReaderTests(unittest.TestCase):
     def test_missing_file(self):
         with self.assertRaises(FileNotFoundError):
             read_json_records(str(self.tmp / "nope.json"), "records")
+
+    def test_unsupported_extension(self):
+        p = self.tmp / "x.txt"
+        p.write_text("hi")
+        with self.assertRaises(ValueError):
+            read_json_records(str(p), "records")
+
+    def test_parquet_keeps_strings(self):
+        p = str(self.tmp / "t.parquet")
+        pd.DataFrame([{"COUNTRY": " Peru ", "CONTINENT": "Americas", "YEAR": "1952",
+                       "LIFE_EXP": "43.9", "POPULATION": "8025700",
+                       "GDP_PER_CAPITA": "3758.5"}]).to_parquet(p)
+        df = load_nested({"format": "parquet", "path": p, "source_to_canonical": PQ_MAP}, [])
+        self.assertEqual(df["year"].iloc[0], "1952")
+        self.assertEqual(df["country"].iloc[0], "Peru")
