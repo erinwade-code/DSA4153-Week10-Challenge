@@ -40,3 +40,10 @@ class NestedReaderTests(unittest.TestCase):
         self.assertEqual(df["country"].iloc[0], "Peru")
         self.assertEqual(df["source_record"].tolist(), [1, 2])
         self.assertEqual(len(audit), 2)
+
+    def test_json_preserves_bad_values(self):
+        row = json_row(year=1952.5)
+        row["measures"]["pop"] = "abc"
+        df = load_nested(self._settings(self._json({"records": [row]})), [])
+        self.assertEqual(df["year"].iloc[0], 1952.5)
+        self.assertEqual(df["pop"].iloc[0], "abc")
