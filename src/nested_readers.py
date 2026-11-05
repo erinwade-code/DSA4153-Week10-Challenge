@@ -22,3 +22,11 @@ def flatten_record(record: dict, parent: str = "", sep: str = ".") -> dict:
             flat[name] = value
     return flat
 
+def _check_file(path: str, suffix: str) -> Path:
+    """Stop early if the file is missing or has the wrong extension."""
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(f"Input file not found: {path}")
+    if p.suffix.lower() != suffix:
+        raise ValueError(f"Unsupported format {p.suffix!r}, expected {suffix!r}")
+    return p
