@@ -26,3 +26,7 @@ class NestedReaderTests(unittest.TestCase):
         p = self.tmp / name
         p.write_text(json.dumps(doc), encoding="utf-8")
         return str(p)
+
+    def _settings(self, path):
+        return {"format": "json", "path": path, "record_path": "records",
+                "source_to_canonical": JSON_MAP}
