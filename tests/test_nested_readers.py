@@ -51,3 +51,9 @@ class NestedReaderTests(unittest.TestCase):
     def test_json_missing_record_key(self):
         with self.assertRaises(SchemaError):
             read_json_records(self._json({"metadata": {}}), "records")
+
+    def test_json_missing_column(self):
+        row = json_row()
+        del row["measures"]["gdpPercap"]
+        with self.assertRaises(SchemaError):
+            load_nested(self._settings(self._json({"records": [row]})), [])
