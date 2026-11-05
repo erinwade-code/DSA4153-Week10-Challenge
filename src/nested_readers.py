@@ -49,3 +49,8 @@ def read_json_records(path: str, record_path: str, encoding: str = "utf-8") -> p
     if not isinstance(records, list):
         raise SchemaError(f"{record_path!r} in {path} is not a list of records")
     return _to_object_frame([flatten_record(r) for r in records])
+
+def read_parquet_records(path: str, engine: str = "pyarrow") -> pd.DataFrame:
+    """Read Parquet and keep every value as-is (strings); no casting yet."""
+    p = _check_file(path, ".parquet")
+    return _to_object_frame(pd.read_parquet(p, engine=engine))
