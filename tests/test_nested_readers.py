@@ -82,3 +82,11 @@ class NestedReaderTests(unittest.TestCase):
         df = load_nested({"format": "parquet", "path": p, "source_to_canonical": PQ_MAP}, [])
         self.assertEqual(df["year"].iloc[0], "1952")
         self.assertEqual(df["country"].iloc[0], "Peru")
+
+    def test_trim_only_text(self):
+        df = trim_text(pd.DataFrame({"a": [" x ", 5]}, dtype=object))
+        self.assertEqual(df["a"].tolist(), ["x", 5])
+
+
+if __name__ == "__main__":
+    unittest.main()
