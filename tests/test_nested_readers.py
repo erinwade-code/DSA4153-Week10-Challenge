@@ -57,3 +57,13 @@ class NestedReaderTests(unittest.TestCase):
         del row["measures"]["gdpPercap"]
         with self.assertRaises(SchemaError):
             load_nested(self._settings(self._json({"records": [row]})), [])
+
+    def test_json_missing_field_in_one_record_becomes_none(self):
+        bad = json_row()
+        del bad["measures"]["pop"]
+        df = load_nested(self._settings(self._json({"records": [json_row(), bad]})), [])
+        self.assertIsNone(df["pop"].iloc[1])
+
+    def test_missing_file(self):
+        with self.assertRaises(FileNotFoundError):
+            read_json_records(str(self.tmp / "nope.json"), "records")
