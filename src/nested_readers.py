@@ -68,3 +68,9 @@ def trim_text(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame({c: pd.Series([v.strip() if isinstance(v, str) else v for v in df[c]],
                                       index=df.index, dtype=object)
                          for c in df.columns})
+
+def add_source_record(df: pd.DataFrame) -> pd.DataFrame:
+    """Add one-based data-record position (for quarantine.csv)."""
+    out = df.copy()
+    out.insert(0, "source_record", range(1, len(out) + 1))
+    return out
