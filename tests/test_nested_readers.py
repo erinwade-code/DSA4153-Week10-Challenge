@@ -14,5 +14,7 @@ JSON_MAP = {"identity.country": "country", "identity.continent": "continent",
 PQ_MAP = {"COUNTRY": "country", "CONTINENT": "continent", "YEAR": "year",
           "LIFE_EXP": "lifeExp", "POPULATION": "pop", "GDP_PER_CAPITA": "gdpPercap"}
 
-
+def json_row(country=" Peru ", year=1952):
+    return {"identity": {"country": country, "continent": "Americas", "year": year},
+            "measures": {"lifeExp": 43.9, "pop": 8025700, "gdpPercap": 3758.5}}
 
