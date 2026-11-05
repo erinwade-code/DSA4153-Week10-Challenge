@@ -30,3 +30,13 @@ class NestedReaderTests(unittest.TestCase):
     def _settings(self, path):
         return {"format": "json", "path": path, "record_path": "records",
                 "source_to_canonical": JSON_MAP}
+
+    def test_json_normal_ignores_metadata(self):
+        p = self._json({"metadata": {"note": "x"}, "records": [json_row(), json_row(year=1957)]})
+        audit = []
+        df = load_nested(self._settings(p), audit)
+        self.assertEqual(list(df.columns), ["source_record"] + CANONICAL_COLUMNS)
+        self.assertEqual(len(df), 2)
+        self.assertEqual(df["country"].iloc[0], "Peru")
+        self.assertEqual(df["source_record"].tolist(), [1, 2])
+        self.assertEqual(len(audit), 2)
