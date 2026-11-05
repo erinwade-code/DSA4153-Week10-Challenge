@@ -48,3 +48,9 @@ def read_json_records(path: str, records_key: list[str]) -> pd.DataFrame:
     # dtype=object keeps original values (1952 stays int, not 1952.0)
     return pd.DataFrame(rows, dtype=object)
 
+
+def read_parquet_records(path: str) -> pd.DataFrame:
+    """Read Parquet and keep every value as-is (strings); no casting yet."""
+    p = _check_file(path, ".parquet")
+    return pd.read_parquet(p).astype(object)
+
