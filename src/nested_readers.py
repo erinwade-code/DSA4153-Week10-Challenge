@@ -32,3 +32,19 @@ def _check_file(path: str, suffix: str) -> Path:
         raise ValueError(f"Unsupported format {p.suffix!r}, expected {suffix!r}")
     return p
 
+
+def read_json_records(path: str, records_key: list[str]) -> pd.DataFrame:
+    """Read nested JSON; records_key is the path to the list, e.g. ['data', 'records']."""
+    p = _check_file(path, ".json")
+    with open(p, encoding="utf-8") as f:
+        node = json.load(f)
+    for key in records_key:            # walk down the outer metadata object
+        if not isinstance(node, dict) or key not in node:
+            raise SchemaError(f"Missing JSON key {key!r} in {path}")
+        node = node[key]
+    if not isinstance(node, list):
+        raise SchemaError(f"Expected a list of records at {records_key} in {path}")
+    rows = [flatten_record(r) for r in node]
+    # dtype=object keeps original values (1952 stays int, not 1952.0)
+    return pd.DataFrame(rows, dtype=object)
+
