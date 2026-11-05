@@ -54,3 +54,12 @@ def read_parquet_records(path: str) -> pd.DataFrame:
     p = _check_file(path, ".parquet")
     return pd.read_parquet(p).astype(object)
 
+
+def map_columns(df: pd.DataFrame, mapping: dict[str, str], source_file: str) -> pd.DataFrame:
+    """Rename source columns to canonical names; fail if any required one is missing."""
+    df = df.rename(columns=mapping)
+    missing = set(CANONICAL_COLUMNS) - set(df.columns)   # set check, as required
+    if missing:
+        raise SchemaError(f"{source_file}: missing required columns {sorted(missing)}")
+    return df[CANONICAL_COLUMNS].copy()                   # drops extras, fixes order
+
