@@ -18,3 +18,11 @@ def json_row(country=" Peru ", year=1952):
     return {"identity": {"country": country, "continent": "Americas", "year": year},
             "measures": {"lifeExp": 43.9, "pop": 8025700, "gdpPercap": 3758.5}}
 
+class NestedReaderTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())  # fixtures live outside data/
+
+    def _json(self, doc, name="t.json"):
+        p = self.tmp / name
+        p.write_text(json.dumps(doc), encoding="utf-8")
+        return str(p)
