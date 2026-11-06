@@ -6,6 +6,20 @@ Feedback:
 - readers work as intended
 - no problems found on my end
 Outcome: Approved
+#Review 3: Member 3 -> Member 4
+
+Reviewer: Member 3 (Santos)  
+Author: Member 4 (Amon)  
+Reviewed PR: #3 – Member4 pandas analysis  
+Reviewed commit: d6997c4  
+Files reviewed: `src/population.py`, `tests/test_population.py`, `README.md`
+Feedback:
+- The population calculations and filtering functions look generally correct.
+- The matrix construction and population index calculations are implemented clearly.
+- `generate_validation_rows()` currently produces 7 validation records, but `test_generate_validation_rows()` expects 5.
+- The implementation and test should be checked and made consistent.
+Author response: Pending  
+Outcome: Changes requested (pending fix)
 
 #Review 4: Member 4 -> Member 5
 Reviewer: Member 4 (Amon)
