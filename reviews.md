@@ -31,3 +31,10 @@ Feedback:
 - The unit test only corrupts lifeExp, which is already checked, so it can't catch the problem above. It should also change country or pop.
 Author response: Empty For Now
 Outcome: Changes requested (PR #5), <update to Approved after the fix, with the fix commit hash>
+
+
+#Review 5: Member 5 -> Member 1 Reviewer: Member 5 (Dolar) Author: Member 1 (Acuña) Reviewed commit: 5cc1fd2 Feedback:
+
+* CSV and Excel readers work as intended with 10/10 unit tests passing.
+* Verification confirmed proper CP1252 encoding, semicolon delimiters, and sheet selection (observations).
+* Error handling for missing files and unsupported formats verified. Outcome: Approved
