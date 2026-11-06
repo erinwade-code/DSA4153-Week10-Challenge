@@ -6,13 +6,11 @@ Feedback:
 - readers work as intended
 - no problems found on my end
 Outcome: Approved
-#Review 3: Member 3 -> Member 4
 
+#Review 3: Member3 -> Member4
 Reviewer: Member 3 (Santos)  
-Author: Member 4 (Amon)  
-Reviewed PR: #3 – Member4 pandas analysis  
+Author: Member 4 (Amon)   
 Reviewed commit: d6997c4  
-Files reviewed: `src/population.py`, `tests/test_population.py`, `README.md`
 Feedback:
 - The population calculations and filtering functions look generally correct.
 - The matrix construction and population index calculations are implemented clearly.
