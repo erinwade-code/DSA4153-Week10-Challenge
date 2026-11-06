@@ -1,8 +1,7 @@
 """Row validation for the canonical country records."""
 
 import math
-from pyexpat import errors
-from turtle import pd
+import pandas as pd
 
 from src.common import CANONICAL_COLUMNS 
 
