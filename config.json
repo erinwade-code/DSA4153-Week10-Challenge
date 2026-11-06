@@ -1,0 +1,36 @@
+{
+  "inputs": [
+    {
+      "name": "csv",
+      "format": "csv",
+      "path": "data/country_records.csv",
+      "encoding": "cp1252",
+      "delimiter": ";",
+      "skip_lines": 2,
+      "column_map": {
+        "CountryName": "country",
+        "ContinentName": "continent",
+        "ObservationYear": "year",
+        "LifeYears": "lifeExp",
+        "PopulationPersons": "pop",
+        "GDPPerPerson": "gdpPercap"
+      }
+    },
+    {
+      "name": "excel",
+      "format": "xlsx",
+      "path": "data/country_records.xlsx",
+      "sheet": "observations",
+      "column_map": {
+        "country_name": "country",
+        "continent_name": "continent",
+        "observation_year": "year",
+        "life_expectancy": "lifeExp",
+        "population": "pop",
+        "gdp_per_capita": "gdpPercap"
+      }
+    }
+  ],
+  "output_dir": "outputs",
+  "reporting_year": 2007
+}
