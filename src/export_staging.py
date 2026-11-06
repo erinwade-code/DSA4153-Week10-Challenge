@@ -21,7 +21,7 @@ class StagingExporter:
     def prepare_staging(self) -> None:
         """Creates or cleans the staging directory to prevent dirty writes."""
         if os.path.exists(self.staging_dir):
-            shutil.rmtree(self.staging_dir)
+            shutil.rmtree(self.staging_dir, ignore_errors=True)
         os.makedirs(self.staging_dir, exist_ok=True)
 
     def publish_staging(self) -> None:
@@ -32,18 +32,18 @@ class StagingExporter:
             dst_path = os.path.join(self.output_dir, item)
             if os.path.isdir(src_path):
                 if os.path.exists(dst_path):
-                    shutil.rmtree(dst_path)
+                    shutil.rmtree(dst_path, ignore_errors=True)
                 shutil.copytree(src_path, dst_path)
             else:
                 shutil.copy2(src_path, dst_path)
-        shutil.rmtree(self.staging_dir)
+        shutil.rmtree(self.staging_dir, ignore_errors=True)
 
     def verify_roundtrip_exports(
         self, canonical_df: pd.DataFrame, abs_tol: float = 1e-8
     ) -> bool:
         """
         Reloads exported canonical files (.csv, .xlsx, .json, .parquet),
-        reapplies schema, and compares with pre-export canonical table.
+        reapplies schema, and compares all 6 columns with pre-export canonical table.
         """
         export_files = {
             "csv": os.path.join(self.staging_dir, "canonical.csv"),
@@ -51,6 +51,9 @@ class StagingExporter:
             "json": os.path.join(self.staging_dir, "canonical.json"),
             "parquet": os.path.join(self.staging_dir, "canonical.parquet"),
         }
+
+        canonical_cols = ["country", "continent", "year", "lifeExp", "pop", "gdpPercap"]
+        canonical_sorted = canonical_df.sort_values(by=["country", "year"]).reset_index(drop=True)
 
         for fmt, filepath in export_files.items():
             if not os.path.exists(filepath):
@@ -65,18 +68,40 @@ class StagingExporter:
             elif fmt == "parquet":
                 reloaded = pd.read_parquet(filepath)
 
+            # 1. Verify schema column presence and order
+            if list(reloaded.columns) != canonical_cols:
+                return False
+
+            # 2. Check row count equality
+            if len(reloaded) != len(canonical_sorted):
+                return False
+
+            # 3. Check for unauthorized missing/NaN values across ALL columns
+            if reloaded[canonical_cols].isna().any().any():
+                return False
+
             # Re-apply schema & types
             reloaded["year"] = reloaded["year"].astype(int)
             reloaded["pop"] = reloaded["pop"].astype(int)
             reloaded["lifeExp"] = reloaded["lifeExp"].astype(float)
             reloaded["gdpPercap"] = reloaded["gdpPercap"].astype(float)
 
-            if len(reloaded) != len(canonical_df):
-                return False
+            # Sort by keys to align rows before comparison
+            reloaded_sorted = reloaded.sort_values(by=["country", "year"]).reset_index(drop=True)
 
-            # Compare numerical columns within tolerance
-            diff_life = np.abs(reloaded["lifeExp"].values - canonical_df["lifeExp"].values)
-            diff_gdp = np.abs(reloaded["gdpPercap"].values - canonical_df["gdpPercap"].values)
+            # 4. Exact text matching (country, continent)
+            for col in ["country", "continent"]:
+                if not (reloaded_sorted[col].astype(str) == canonical_sorted[col].astype(str)).all():
+                    return False
+
+            # 5. Exact integer matching (year, pop)
+            for col in ["year", "pop"]:
+                if not (reloaded_sorted[col].values == canonical_sorted[col].values).all():
+                    return False
+
+            # 6. Floating-point numerical matching within tolerance (lifeExp, gdpPercap)
+            diff_life = np.abs(reloaded_sorted["lifeExp"].values - canonical_sorted["lifeExp"].values)
+            diff_gdp = np.abs(reloaded_sorted["gdpPercap"].values - canonical_sorted["gdpPercap"].values)
 
             if np.max(diff_life) > abs_tol or np.max(diff_gdp) > abs_tol:
                 return False
