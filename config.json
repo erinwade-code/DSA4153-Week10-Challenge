@@ -1,4 +1,12 @@
 {
+  "manifest": "data/manifest.json",
+  "output_dir": "outputs",
+  "staging_dir": "staging",
+  "reporting_year": 2007,
+  "tolerance": 1e-8,
+  "history_country": "Philippines",
+  "matrix_countries": ["Philippines", "Indonesia", "Thailand"],
+  "matrix_years": [1982, 1987, 1992, 1997, 2002, 2007],
   "inputs": [
     {
       "name": "csv",
@@ -29,8 +37,35 @@
         "population": "pop",
         "gdp_per_capita": "gdpPercap"
       }
+    },
+    {
+      "name": "json",
+      "format": "json",
+      "path": "data/country_records.json",
+      "encoding": "utf-8",
+      "record_path": "records",
+      "source_to_canonical": {
+        "identity.country": "country",
+        "identity.continent": "continent",
+        "identity.year": "year",
+        "measures.lifeExp": "lifeExp",
+        "measures.pop": "pop",
+        "measures.gdpPercap": "gdpPercap"
+      }
+    },
+    {
+      "name": "parquet",
+      "format": "parquet",
+      "path": "data/country_records.parquet",
+      "engine": "pyarrow",
+      "source_to_canonical": {
+        "COUNTRY": "country",
+        "CONTINENT": "continent",
+        "YEAR": "year",
+        "LIFE_EXP": "lifeExp",
+        "POPULATION": "pop",
+        "GDP_PER_CAPITA": "gdpPercap"
+      }
     }
-  ],
-  "output_dir": "outputs",
-  "reporting_year": 2007
+  ]
 }
