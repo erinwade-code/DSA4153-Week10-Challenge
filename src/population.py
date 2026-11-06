@@ -81,88 +81,63 @@ def population_index_table(index_matrix: np.ndarray, countries: list[str], years
     table.insert(0, "country", countries)
     return table
 
-def generate_validation_rows(case_week, countries, years) -> list:
-    """Generates the 5 validation dictionaries for audit logging."""
+def generate_validation_rows(case_week, countries, years, year: int = 2007,
+                             country: str = "Philippines") -> list:
+    """Generates the 5 validation dictionaries for the configured year."""
     results = []
-    for y in [2007, 1997]:
-        var1 = asia_pop_life(case_week, y)
-        var2 = asia_pop_total(case_week, year_arr=y)[0]
-        var3 = asia_pop_total(case_week, year_arr=y)[1]
 
-        pop1 = var1["pop_millions"].sum()
-        pop2 = pop1 * 1000000
-        length1 = len(var1)
+    var1 = asia_pop_life(case_week, year)
+    var2, var3 = asia_pop_total(case_week, year_arr=year)
+    actual_total = int(var1["pop"].sum())
+    length1 = len(var1)
 
-        valid1 = np.isclose(var2, pop2, rtol=0, atol=1.0)
-        valid2 = length1 == var3
-
-        diction = {
-            "check": f"Asia total {y}",
-            "expected": float(var1["pop"].sum()),
-            "actual": float(pop2),
-            "tolerance": 1.0,
-            "pass": bool(valid1),
-        }
-        diction2 = {
-            "check": f"Asia row count {y}",
-            "expected": int(var3),
-            "actual": int(length1),
-            "tolerance": 0,
-            "pass": bool(valid2),
-        }
-        results.append(diction)
-        results.append(diction2)
+    results.append({
+        "check": f"Asia total {year}",
+        "expected": var2,
+        "actual": actual_total,
+        "tolerance": 0,
+        "pass": bool(var2 == actual_total),
+    })
+    results.append({
+        "check": f"Asia row count {year}",
+        "expected": int(var3),
+        "actual": int(length1),
+        "tolerance": 0,
+        "pass": bool(length1 == var3),
+    })
 
     pop_matrix = build_population_matrix(case_week, countries, years)
     pop_idx = population_index(pop_matrix)
     stored = pop_ind(pop_matrix)
-    valid3 = np.allclose(stored, pop_idx, atol=1e-8, rtol=0)
-    differ = stored - pop_idx
-    absol = np.abs(differ)
-    maxi = absol.max()
-
-    diction3 = {
+    maxi = np.abs(stored - pop_idx).max()
+    results.append({
         "check": "Broadcast Result versus Loop Result",
-        "expected": float(0),
+        "expected": 0.0,
         "actual": float(maxi),
         "tolerance": 1e-8,
-        "pass": bool(valid3),
-    }
-    results.append(diction3)
+        "pass": bool(np.allclose(stored, pop_idx, atol=1e-8, rtol=0)),
+    })
 
     first_col = pop_idx[:, 0]
-    valid4 = np.allclose(first_col, 100, atol=1e-8, rtol=0)
-
-    diction4 = {
-        "check": "1982 Column equals 100",
+    results.append({
+        "check": "First-year column equals 100 (max deviation)",
         "expected": 0.0,
         "actual": float(np.abs(first_col - 100).max()),
         "tolerance": 1e-8,
-        "pass": bool(valid4),
-    }
-    results.append(diction4)
+        "pass": bool(np.allclose(first_col, 100, atol=1e-8, rtol=0)),
+    })
 
-    countried = case_week["country"].to_numpy()
-    yeared = case_week["year"].to_numpy()
+    names = case_week["country"].to_numpy()
+    yrs = case_week["year"].to_numpy()
     pops = case_week["pop"].to_numpy()
-
-    call = phil_pop_life(case_week)
-    call2 = call["year"].to_numpy()
-    call3 = call["pop"].to_numpy()
-
-    call_mask = call2 == 2007
-    phil_mask = (countried == "Philippines") & (yeared == 2007)
-    varia = pops[phil_mask].sum()
-    expects = call3[call_mask].sum()
-    valid5 = np.allclose(varia, expects, atol=1.0, rtol=0)
-
-    diction5 = {
-        "check": "Philippine Population in 2007",
-        "expected": float(varia),
-        "actual": float(expects),
-        "tolerance": 1.0,
-        "pass": bool(valid5),
-    }
-    results.append(diction5)
-
+    expected_pop = int(pops[(names == country) & (yrs == year)].sum())
+    history = phil_pop_life(case_week, country)
+    actual_pop = int(history.loc[history["year"] == year, "pop"].sum())
+    results.append({
+        "check": f"{country} population {year}",
+        "expected": expected_pop,
+        "actual": actual_pop,
+        "tolerance": 0,
+        "pass": bool(expected_pop == actual_pop),
+    })
     return results
