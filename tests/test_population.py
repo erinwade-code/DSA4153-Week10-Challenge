@@ -49,6 +49,14 @@ def test_asia_pop_life(standin_data):
     assert result.iloc[0]["country"] == "Thailand"
     assert result.iloc[0]["lifeExp_rank"] == 1
 
+def test_asia_pop_total(standin_data):
+    """Verifies the NumPy mask total and row count."""
+    total, count = asia_pop_total(standin_data, year_arr=2007)
+
+    assert total == 91077287 + 225000000 + 65000000
+    assert count == 3
+    # A continent with no rows gives zero total and zero rows
+    assert asia_pop_total(standin_data, cont_arr="Europe", year_arr=2007) == (0, 0)
 
 def test_phil_pop_life(standin_data):
     """Verifies baseline life expectancy change calculation."""
